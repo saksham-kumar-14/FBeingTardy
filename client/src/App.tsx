@@ -1,16 +1,18 @@
-import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import Home from './Components/home';
+import { AuthProvider } from './Context/authContext';
 
 const App = () => {
 
   return(
     <>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<Home/>} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/' element={<Home/>} />
+          </Routes>
+        </BrowserRouter>  
+      </AuthProvider>
     </>
   )
 }
