@@ -30,7 +30,7 @@ const Home = () => {
                 <button onClick={handleDeleteUser}>Delete Account</button>
               </div>
               <div>
-                <Search />
+                <Search user={user} setUser={setUser} />
               </div>
             </div>
           ) : (

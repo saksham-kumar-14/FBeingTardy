@@ -17,14 +17,15 @@ const Register : React.FC = () => {
 
   async function username_emailExists(){
 
-    let ans = 0;
     const res = await axios.get("http://localhost:3001/users");
     const data = await res.data;
+    let ans = 0;
 
     if(data != null){
       data.map((e: User) => {
         if(e.username == username || e.email == email){
           ans = 1;
+          return ans;
         }
       })
     }
@@ -47,7 +48,8 @@ const Register : React.FC = () => {
       axios.post('http://localhost:3001/users', {
         username: username,
         email: email,
-        password: hash
+        password: hash,
+        friends: []
       }).then(() => {
         alert("User Created");
       }).catch((err) => {

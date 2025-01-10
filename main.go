@@ -23,6 +23,7 @@ type User struct {
 	Username string             `json:"username"`
 	Email    string             `json:"email"`
 	Password string             `json:"password"`
+	Friends  []string           `json:"friends"`
 }
 
 type loginCreds struct {
@@ -73,7 +74,7 @@ func main() {
 	app.Delete("/user/:id", deleteUser)
 	app.Post("/login", handleLogin)
 	app.Get("/api/login", handleLoginApi)
-	// for updation : _, err := collection.UpdateOne(context.Background(), filer, update) // filter = bson.M{"_id":objectID} // update = bson.M{"$set":bson.M{"darkMode" : false}}
+	app.Post("/update", updateUser)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -166,7 +167,7 @@ func handleLoginApi(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Internal Server Error"})
 		}
 
-		return c.Status(200).JSON(fiber.Map{"status": "ok", "id": result.ID, "username": result.Username})
+		return c.Status(200).JSON(fiber.Map{"status": "ok", "id": result.ID, "username": result.Username, "friends": result.Friends})
 
 	}
 
@@ -179,6 +180,7 @@ func getUsers(c *fiber.Ctx) error {
 	type UserApi struct {
 		ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 		Username string             `json:"username"`
+		Email    string             `json:"email"`
 	}
 
 	var users []UserApi
@@ -237,4 +239,28 @@ func deleteUser(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(fiber.Map{"status": "ok", "deleted": true})
+}
+
+func updateUser(c *fiber.Ctx) error {
+
+	type UpdateReq struct {
+		Username string   `json:"username"`
+		Friends  []string `json:"friends"`
+	}
+
+	var body UpdateReq
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse request body",
+		})
+	}
+
+	filter := bson.M{"username": body.Username}
+	update := bson.M{"$set": bson.M{"friends": body.Friends}}
+	_, err := collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "ok", "updated": true})
 }

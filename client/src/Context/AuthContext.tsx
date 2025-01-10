@@ -5,7 +5,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 interface User{
     username: string,
-    id: string
+    id: string,
+    friends?: string[]
 }
 
 interface AuthContextType {
@@ -41,9 +42,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = (props) => {
             const data = await res.data;
             if(data.status == 'ok'){
                 setIsLoggedIn(true);
+                
+                if(data.friends == null) data.friends = [];
+
                 setUser({
                     username: data.username,
-                    id: data.id
+                    id: data.id,
+                    friends: data.friends
                 });
             }else setIsLoggedIn(false);
         }
