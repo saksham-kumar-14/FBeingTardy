@@ -5,8 +5,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 interface User{
     username: string,
-    email: string,
-    password: string
+    id: string
 }
 
 interface AuthContextType {
@@ -39,9 +38,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = (props) => {
                     'token': token
                 }
             });
-            const data = res.data;
-            if(data.status == 'ok') setIsLoggedIn(true);
-            else setIsLoggedIn(false);
+            const data = await res.data;
+            if(data.status == 'ok'){
+                setIsLoggedIn(true);
+                setUser({
+                    username: data.username,
+                    id: data.id
+                });
+            }else setIsLoggedIn(false);
         }
         const token = localStorage.getItem('token');
         if(token){
@@ -72,6 +76,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = (props) => {
     const deleteUser = async (id: string) => {
         const res = await axios.delete(`http://localhost:3001/user/${id}`);
         const data = await res.data;
+        console.log(data);
+        
         if(data.status == 'ok') {
             localStorage.removeItem('token');
             alert("User is now deleted");
@@ -83,6 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = (props) => {
     const logout = async () => {
         localStorage.removeItem('token');
         alert("You're logged out!")
+        window.location.reload();
     }
 
     const value = {

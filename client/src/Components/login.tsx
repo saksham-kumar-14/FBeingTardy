@@ -9,9 +9,9 @@ const Login : React.FC<props> = ({login}) => {
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
 
-  function handleLogin(){
-    login(username, pwd);
-    //window.location.reload();
+  async function handleLogin(){
+    await login(username, pwd);
+    await window.location.reload();
   }
 
   return(

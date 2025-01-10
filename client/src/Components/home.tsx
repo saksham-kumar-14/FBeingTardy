@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../Context/authContext";
 import Login from "./login";
 import Register from "./register";
+import Search from "./HomeComponents/search";
 
 
 const Home = () => {
@@ -15,14 +16,22 @@ const Home = () => {
   } = useAuth();
   const [showComponent, setShowComponent] = useState<string | null>(null);
 
+  async function handleDeleteUser(){
+    await deleteUser(user.id);
+    window.location.reload();
+  }
+
   return (
       <div>
           {isLoggedIn ? (
             <div>
-              <button onClick={logout}>Logout</button>
-              <button onClick={()=>{
-                deleteUser(user.id)
-              }}>Delete Account</button>
+              <div>
+                <button onClick={logout}>Logout</button>
+                <button onClick={handleDeleteUser}>Delete Account</button>
+              </div>
+              <div>
+                <Search />
+              </div>
             </div>
           ) : (
             <div>

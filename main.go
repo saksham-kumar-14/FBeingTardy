@@ -23,7 +23,6 @@ type User struct {
 	Username string             `json:"username"`
 	Email    string             `json:"email"`
 	Password string             `json:"password"`
-	DarkMode bool               `json:"darkMode"`
 }
 
 type loginCreds struct {
@@ -71,7 +70,7 @@ func main() {
 
 	app.Get("/users", getUsers)
 	app.Post("/users", createUser)
-	app.Delete("/users/:id", deleteUser)
+	app.Delete("/user/:id", deleteUser)
 	app.Post("/login", handleLogin)
 	app.Get("/api/login", handleLoginApi)
 	// for updation : _, err := collection.UpdateOne(context.Background(), filer, update) // filter = bson.M{"_id":objectID} // update = bson.M{"$set":bson.M{"darkMode" : false}}
@@ -153,16 +152,36 @@ func handleLoginApi(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid Token"})
 	}
-	if !tokenForm.Valid {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid Token"})
+
+	if claims, ok := tokenForm.Claims.(jwt.MapClaims); ok && tokenForm.Valid {
+
+		username := claims["username"].(string)
+
+		var result User
+		err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&result)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return c.Status(400).JSON(fiber.Map{"error": "No such user found"})
+			}
+			return c.Status(500).JSON(fiber.Map{"error": "Internal Server Error"})
+		}
+
+		return c.Status(200).JSON(fiber.Map{"status": "ok", "id": result.ID, "username": result.Username})
+
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "ok"})
+	return c.Status(400).JSON(fiber.Map{"error": "Invalid Token"})
 
 }
 
 func getUsers(c *fiber.Ctx) error {
-	var users []User
+
+	type UserApi struct {
+		ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+		Username string             `json:"username"`
+	}
+
+	var users []UserApi
 
 	cursor, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
@@ -172,7 +191,7 @@ func getUsers(c *fiber.Ctx) error {
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var user User
+		var user UserApi
 		if err := cursor.Decode(&user); err != nil {
 			return err
 		}
@@ -217,5 +236,5 @@ func deleteUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(200).JSON(fiber.Map{"deleted": true})
+	return c.Status(200).JSON(fiber.Map{"status": "ok", "deleted": true})
 }
