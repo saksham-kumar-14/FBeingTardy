@@ -222,7 +222,7 @@ func createUser(c *fiber.Ctx) error {
 	}
 	user.ID = insRes.InsertedID.(primitive.ObjectID)
 
-	return c.Status(201).JSON(user)
+  return c.Status(201).JSON(fiber.Map{"status" : "ok"})
 }
 
 func deleteUser(c *fiber.Ctx) error {
