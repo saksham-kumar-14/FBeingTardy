@@ -1,10 +1,11 @@
 import React , { useState } from 'react';
 
 interface props{
-  login: (username: string, pwd: string) => string
+  login: (username: string, pwd: string) => string,
+  setShowComponent: Function
 };
 
-const Login : React.FC<props> = ({login}) => {
+const Login : React.FC<props> = ({login, setShowComponent}) => {
 
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
@@ -25,7 +26,9 @@ const Login : React.FC<props> = ({login}) => {
       }} placeholder="PASSWORD" type="password" />
       <button onClick={handleLogin}>Login</button>
       <span>Don't have an account? Then 
-        <a> Create One </a>
+        <a onClick={() => {
+          setShowComponent('REGISTER');
+        }}> Create One </a>
       </span>
     </div>
   )

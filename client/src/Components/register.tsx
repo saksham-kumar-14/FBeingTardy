@@ -8,7 +8,11 @@ interface User{
   password: string // encyrpted one
 }
 
-const Register : React.FC = () => {
+interface props{
+  setShowComponent: Function
+}
+
+const Register : React.FC<props> = ({ setShowComponent }) => {
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -92,7 +96,9 @@ const Register : React.FC = () => {
       </button>
 
       <span>Already have an account? Then 
-        <a> Login </a>
+        <a onClick={() => {
+          setShowComponent('LOGIN');
+        }}> Login </a>
       </span>
     </div>
   )

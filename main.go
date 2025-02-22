@@ -19,11 +19,12 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Username string             `json:"username"`
-	Email    string             `json:"email"`
-	Password string             `json:"password"`
-	Friends  []string           `json:"friends"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Username  string             `json:"username"`
+	Email     string             `json:"email"`
+	Password  string             `json:"password"`
+	Friends   []string           `json:"friends"`
+	FriendsOf []string           `json:"friendsOf"`
 }
 
 type loginCreds struct {
@@ -167,7 +168,7 @@ func handleLoginApi(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Internal Server Error"})
 		}
 
-		return c.Status(200).JSON(fiber.Map{"status": "ok", "id": result.ID, "username": result.Username, "friends": result.Friends})
+		return c.Status(200).JSON(fiber.Map{"status": "ok", "id": result.ID, "username": result.Username, "friends": result.Friends, "friendsOf": result.FriendsOf})
 
 	}
 
@@ -178,9 +179,11 @@ func handleLoginApi(c *fiber.Ctx) error {
 func getUsers(c *fiber.Ctx) error {
 
 	type UserApi struct {
-		ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-		Username string             `json:"username"`
-		Email    string             `json:"email"`
+		ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+		Username  string             `json:"username"`
+		Email     string             `json:"email"`
+		Friends   []string           `json:"friends"`
+		FriendsOf []string           `json:"friendsOf"`
 	}
 
 	var users []UserApi
@@ -222,7 +225,7 @@ func createUser(c *fiber.Ctx) error {
 	}
 	user.ID = insRes.InsertedID.(primitive.ObjectID)
 
-  return c.Status(201).JSON(fiber.Map{"status" : "ok"})
+	return c.Status(201).JSON(fiber.Map{"status": "ok"})
 }
 
 func deleteUser(c *fiber.Ctx) error {
@@ -244,8 +247,9 @@ func deleteUser(c *fiber.Ctx) error {
 func updateUser(c *fiber.Ctx) error {
 
 	type UpdateReq struct {
-		Username string   `json:"username"`
-		Friends  []string `json:"friends"`
+		Username  string   `json:"username"`
+		Friends   []string `json:"friends"`
+		FriendsOf []string `json:"friendsOf"`
 	}
 
 	var body UpdateReq
@@ -256,7 +260,7 @@ func updateUser(c *fiber.Ctx) error {
 	}
 
 	filter := bson.M{"username": body.Username}
-	update := bson.M{"$set": bson.M{"friends": body.Friends}}
+	update := bson.M{"$set": bson.M{"friends": body.Friends, "friendsOf": body.FriendsOf}}
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": err})

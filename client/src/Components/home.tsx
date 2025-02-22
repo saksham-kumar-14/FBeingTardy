@@ -42,11 +42,11 @@ const Home = () => {
 
           {
             showComponent == 'LOGIN' &&
-            <Login login={login} /> 
+            <Login login={login} setShowComponent={setShowComponent} /> 
           }
           {
             showComponent == 'REGISTER' &&
-            <Register />
+            <Register setShowComponent={setShowComponent} />
           }
 
       </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface props{
     user: any,
@@ -9,6 +10,7 @@ interface props{
 const Search : React.FC<props> = ({user, setUser}) => {
     const [search, setSearch] = useState<string>('');
     const [searchResult, setSearchResult] = useState<any>([]);
+    const navigate = useNavigate();
 
     async function loadUsers(){
         const res = await axios.get('http://localhost:3001/users');
@@ -51,7 +53,8 @@ const Search : React.FC<props> = ({user, setUser}) => {
 
         axios.post('http://localhost:3001/update', {
             username: user.username,
-            friends: user.friends
+            friends: user.friends,
+            friendsOf: user.friendsOf
         }).then(() => {
             setUser(user)
             loadUsers();
@@ -59,6 +62,26 @@ const Search : React.FC<props> = ({user, setUser}) => {
             console.error(err);
             alert("Error occured");
         });
+
+        const allUsers = await axios.get('http://localhost:3001/users');
+        const user2 = await allUsers.data;
+        user2.map((e: any) => {
+            if(e.username == username){
+                if(e.friendsOf == undefined) e.friendsOf = [];
+                e.friendsOf.push(user.username);
+                axios.post('http://localhost:3001/update', {
+                    username: e.username,
+                    friends: e.friends,
+                    friendsOf: e.friendsOf
+                }).then(() => {
+                    loadUsers();
+                }).catch((err) => {
+                    console.error(err);
+                    alert("Error occured");
+                });
+            }
+        })
+
     }
 
     return(
@@ -80,7 +103,9 @@ const Search : React.FC<props> = ({user, setUser}) => {
                     {searchResult.map((e: any, idx: number)=>{
                         return(
                             <div>
-                                <ul>{e.username}</ul>
+                                <ul onClick={() => {
+                                    navigate(`/profile/${e.username}`);
+                                }}>{e.username}</ul>
                                 {!e.friend && <button onClick={() => {
                                     addFriend(e.username);
                                 }}>Add Friend</button>}
